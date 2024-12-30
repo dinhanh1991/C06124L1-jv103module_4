@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View Product</title>
+</head>
+<body>
+<div th:fragment="body">
+  <h1>Product Details</h1>
+  <p><strong>Name:</strong> <span th:text="${product.name}"></span></p>
+  <p><strong>Description:</strong> <span th:text="${product.description}"></span></p>
+  <p><strong>Price:</strong> <span th:text="${product.price}"></span></p>
+  <p><strong>Firm:</strong> <span th:text="${product.firm}"></span></p>
+  <a href="/products" class="btn btn-secondary">Back to Product List</a>
+</div>
+</body>
+</html>
