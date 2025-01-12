@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Update Student</title>
+</head>
+<body>
+<div th:replace="layout::header"></div>
+<h2>Update Student</h2>
+<form action="/update" method="post">
+  <input type="hidden" id="id" name="id" th:value="${student.id}">
+  <label for="name">Name:</label>
+  <input type="text" id="name" name="name" required><br>
+  <label for="gender">Gender:</label>
+  <select id="gender" name="gender">
+    <option value="true">Male</option>
+    <option value="false">Female</option>
+  </select><br>
+  <label for="age">Age:</label>
+  <input type="number" id="age" name="age" required><br>
+  <label for="schoolClass">Class:</label>
+  <select th:field="*{student.className}" id="schoolClass">
+    <option value="" disabled selected>Class :</option>
+    <option th:each="c:${schoolClasses}" th:value="${c.id}" th:text="${c.name}"></option>
+  </select> <br>
+  <button type="submit">Update</button>
+</form>
+<div th:replace="layout::footer"></div>
+</body>
+</html>

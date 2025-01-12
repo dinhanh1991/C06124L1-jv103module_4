@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+
+<header th:fragment="header" class="bg-success text-white text-center py-4 shadow">
+    <h1 class="mb-3">Student Management</h1>
+    <nav>
+        <a href="/" class="text-white text-decoration-none me-3">Home</a>
+        <a href="/create" class="text-white text-decoration-none">Create New Student</a>
+    </nav>
+</header>
+
+<div class="container my-5">
+    <div th:replace="${body}"></div>
+</div>
+
+<footer th:fragment="footer" class="bg-dark text-white text-center py-3 mt-auto">
+    <p>&copy; 2025 Student Management System</p>
+</footer>
+</body>
+</html>
