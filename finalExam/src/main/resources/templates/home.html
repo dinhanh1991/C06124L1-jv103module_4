@@ -4,23 +4,19 @@
     <meta charset="UTF-8">
     <title>Quản lý sản phẩm</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-          integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
-          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" th:href="@{/static/css/style.css}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"
-          integrity="sha512-vKMx8UnX9xuZsJhGwiViajxnsg0IrhVYv6ckQvQIUVHq2uYJvJ9rrWis9AkSOp26UpFmBp4EZLYoFGWIhkOg=="
-          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 </head>
 <body>
 
 <div class="container">
     <h1>Quản Lý Sản Phẩm</h1>
-    <button th:onclick="|window.location.href='@{/products/create}'|">Thêm sản phẩm</button>
+
     <div class="card shadow p-3 mb-4 bg-white rounded">
         <div class="card-body">
             <h5 class="card-title">Tìm kiếm sản phẩm</h5>
-            <form th:action="@{/products/search}" method="get">
+            <form th:action="@{/products/search}" method="get" id="searchForm">
                 <div class="form-row">
                     <div class="form-group col-md-4">
                         <label for="name">Tên sản phẩm:</label>
@@ -29,20 +25,23 @@
                     </div>
                     <div class="form-group col-md-4">
                         <label for="minPrice">Giá bắt đầu:</label>
-                        <input type="text" class="form-control" id="minPrice" name="minPrice"
+                        <input type="number" class="form-control" id="minPrice" name="minPrice"
                                placeholder="Nhập giá bắt đầu">
                     </div>
                     <div class="form-group col-md-4">
-                        <label for="productType">Loại sản phẩm:</label>
-                        <select class="form-control" id="productType" th:field="*{productType}">
+                        <label for="productTypeId">Loại sản phẩm:</label>
+                        <select id="productTypeId" name="productTypeId" class="form-control">
                             <option value="">--Chọn--</option>
-                            <option th:each="type : ${productType}" th:value="${type.id}" th:text="${type.productTypeName}"></option>
+                            <option th:each="type : ${productTypes}"
+                                    th:value="${type.id}"
+                                    th:text="${type.productTypeName}"></option>
                         </select>
                     </div>
                 </div>
-                <button type="button" class="btn btn-secondary"><i class="fas fa-sync-alt"></i> Xóa tìm kiếm</button>
-                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Tìm</button>
-
+                <button type="button" class="btn btn-secondary" onclick="clearSearchForm()"><i
+                        class="fas fa-sync-alt"></i> Xóa tìm kiếm
+                </button>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Tìm kiếm</button>
             </form>
         </div>
     </div>
@@ -61,24 +60,25 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="product, i : ${productPage}">
-                <td th:text="${i.count}"></td>
+            <tr th:each="product, i : ${productPage.content}">
+                <td th:text="${i.index + 1}"></td>
                 <td><input type="checkbox" name="selectedProductIds" th:value="${product.id}"></td>
                 <td th:text="${product.name}"></td>
                 <td th:text="${product.price}"></td>
                 <td th:text="${product.productType.productTypeName}"></td>
-                <td th:text="${product.getStatus()}"></td>
+                <td th:text="${product.status}"></td>
                 <td>
-                    <a th:href="@{/products/edit/{id}(id=${product.id})}" class="btn btn-sm btn-info"><i class="fas fa-edit"></i> Sửa</a>
+                    <a th:href="@{/products/edit/{id}(id=${product.id})}" class="btn btn-sm btn-info"><i
+                            class="fas fa-edit"></i> Sửa</a>
                 </td>
             </tr>
             </tbody>
         </table>
     </div>
 
-    <form th:action="@{/products/deleteProductByList}" method="post">
-        <button type="submit" class="btn btn-danger" onclick="return confirmDelete();"><i class="fas fa-trash"></i> Xóa</button>
-    </form>
+    <!-- Remove the form and button element that submits-->
+    <button type="button" class="btn btn-danger" onclick="confirmDelete()"><i
+            class="fas fa-trash"></i> Xóa</button>
 
 
     <nav aria-label="Page navigation example">
@@ -88,8 +88,8 @@
                     <span aria-hidden="true">«</span>
                 </a>
             </li>
-            <li class="page-item" th:classappend="${i == productPage.number ? 'active' : ''}"
-                th:each="i : ${#numbers.sequence(0, productPage.totalPages - 1)}">
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, productPage.totalPages - 1)}"
+                th:classappend="${i == productPage.number ? 'active' : ''}">
                 <a class="page-link" th:href="@{/products(page=${i})}" th:text="${i + 1}"></a>
             </li>
             <li class="page-item" th:classappend="${productPage.number >= productPage.totalPages - 1 ? 'disabled' : ''}">
@@ -102,22 +102,67 @@
 
 </div>
 
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<!-- Script -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"
-        integrity="sha512-VEd+nq25CkR6jDiVc/YQ9+u6H2lvWIUXlaKdxndogmIiT9UjuLiotWnVIQyOU2AeqJ5jz9WjJOLcm+jC3wbw=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
 <script th:inline="javascript">
     $(document).ready(function () {
+        console.log("jQuery phiên bản:", jQuery.fn.jquery);
+
+        if (typeof toastr === "undefined") {
+            console.error("Toastr chưa được tải!");
+        } else {
+            console.log("Toastr đã tải thành công!");
+        }
+
         let message = /*[[${message}]]*/ null;
-        if (message) {
+        console.log("Thông báo từ backend:", message);
+
+        if (message !== null && message !== "null") {
             toastr.success(message);
         }
     });
 
     function confirmDelete() {
-        return confirm("Bạn có chắc chắn muốn xóa các sản phẩm đã chọn?");
+        let selectedProducts = [];
+        document.querySelectorAll('input[name="selectedProductIds"]:checked').forEach(function (item) {
+            selectedProducts.push(item.value);
+        });
+
+        if (selectedProducts.length === 0) {
+            toastr.warning("Vui lòng chọn ít nhất một sản phẩm để xóa!");
+            return; // Do not process if no products selected
+        }
+
+        if (confirm("Bạn có muốn xóa tất cả sản phẩm đã chọn?")) {
+            // Use AJAX to send the delete request
+            $.ajax({
+                type: 'POST',
+                url: /*[[@{/products/deleteProductByList}]]*/ '',
+                data: {selectedProductIds: selectedProducts},
+                success: function (response) {
+                    // Handle success response from server
+                    console.log(response);
+                    toastr.success(response); // Show success message
+                    window.location.reload(); //Reload page so view update to reflect deletes
+                },
+                error: function (xhr, status, error) {
+                    //Handle error if it was from server
+                    console.error("Lỗi khi xóa sản phẩm:", error);
+                    toastr.error("Lỗi khi xóa sản phẩm: " + error); // Show error message
+                },
+                dataType: "text" // Expect a text response from the server
+            });
+        }
+    }
+
+    function clearSearchForm() {
+        document.getElementById("name").value = "";
+        document.getElementById("minPrice").value = "";
+        document.getElementById("productTypeId").value = "";
     }
 </script>
 </body>

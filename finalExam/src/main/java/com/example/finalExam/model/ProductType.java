@@ -1,9 +1,7 @@
 package com.example.finalExam.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
 
-import java.util.List;
 
 @Entity
 @Table(name = "product_type")

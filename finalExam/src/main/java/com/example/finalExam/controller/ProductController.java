@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -32,38 +31,48 @@ public class ProductController {
     public ModelAndView listProducts(Model model,
                                      @RequestParam(name = "page",defaultValue = "0",required = false) int page) {
         ModelAndView mav = new ModelAndView("home");
-        Pageable pageable = PageRequest.of(page, 5);
-        System.out.println(productTypeRepo.findAll());
+        Pageable pageable =  PageRequest.of(page, 3);
+        mav.addObject("currentPage", page);
         mav.addObject("productPage", productService.findAll(pageable));
         mav.addObject("productType", productTypeRepo.findAll());
         mav.addObject("totalPage",productService.findAll(pageable).getTotalPages());
         return mav;
     }
     @GetMapping("/search")
-    public String searchProducts( @RequestParam(required = false) String name,
-                                  @RequestParam(required = false) ProductType productType,
-                                  @RequestParam(required = false) Integer minPrice,
-                                  @RequestParam(required = false) Integer maxPrice,
-                                  @PageableDefault(size = 5) Pageable pageable,
-                                  Model model){
-            Page<Product> productPage;
-        model.addAttribute("productType",productTypeRepo.findAll());
-            if (name != null & productType != null & minPrice != null ) {
-                productPage = productService.findByNameAndProductTypeAndPriceBetween(name, productType, minPrice, pageable);
-            } else if (name != null) {
-                productPage = productService.findByName(name, pageable);
-            } else if (productType != null) {
-                productPage = productService.findByProductType(productType, pageable);
-            } else if (minPrice != null) {
-                productPage = productService.findByPriceBetween(minPrice, pageable);
-            }
-            else {
-                productPage=productService.findAll(pageable);
-            }
+    public ModelAndView searchProducts(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Integer productTypeId,
+            @RequestParam(required = false) Integer minPrice,
+            Model model,@RequestParam(name = "page",defaultValue = "0",required = false) int page) {
+        ModelAndView mav = new ModelAndView("home");
+        Pageable pageable =  PageRequest.of(page, 3);
+        Page<Product> productPage;
+        mav.addObject("productTypes",productTypeRepo.findAll());
+        ProductType productType = null;
+        if (productTypeId != null) {
+          productType=productTypeRepo.findById(productTypeId).orElse(null) ;}
+        if (name != null && !name.isEmpty() && productTypeId != null && minPrice != null) {
+            productType = productTypeRepo.findById(productTypeId).orElse(null);
+            productPage = productService.findByNameAndProductTypeAndPriceGreaterThanEqual(name, productType, minPrice, pageable);
+        }
 
-            model.addAttribute("productPage", productPage);
-            return "home";
-    }
+        else if (name != null && !name.isEmpty()) {
+            productPage = productService.findByName(name, pageable);
+        }
+        else if (minPrice != null) {
+            productPage = productService.findByPriceGreater(minPrice, pageable);
+        } else if(productTypeId!= null) {
+            productType = productTypeRepo.findById(productTypeId).orElse(null);
+            productPage = productService.findByProductType(productType, pageable);
+        }
+        else {
+            productPage = productService.findAll(pageable);
+        }
+        mav.addObject("currentPage", page);
+        mav.addObject("productPage", productPage);
+        mav.addObject("totalPage", productPage.getTotalPages());
+        return mav;
+}
     @GetMapping("/create")
     public String showCreateForm(Model model) {
         model.addAttribute("productTypes",productTypeRepo.findAll());

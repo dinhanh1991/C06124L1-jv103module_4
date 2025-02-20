@@ -28,11 +28,11 @@ public class ProductService {
     public Page<Product> findByProductType(ProductType productType, Pageable pageable) {
         return productRepository.findByProductType(productType, pageable);
     }
-    public Page<Product> findByPriceBetween(Integer minPrice, Pageable pageable) {
-        return productRepository.findByPriceBetween(minPrice, pageable);
+    public Page<Product> findByPriceGreater(Integer minPrice, Pageable pageable) {
+        return productRepository.findByPriceGreaterThanEqual(minPrice, pageable);
     }
-    public Page<Product> findByNameAndProductTypeAndPriceBetween(String name, ProductType productType, Integer minPrice, Integer maxPrice, Pageable pageable) {
-        return productRepository.findByNameContainingIgnoreCaseAndProductTypeAndPriceBetween(name, productType, minPrice, pageable);
+    public Page<Product> findByNameAndProductTypeAndPriceGreaterThanEqual(String name, ProductType productType, Integer minPrice, Pageable pageable) {
+        return productRepository.findByNameContainingIgnoreCaseAndProductTypeAndPriceGreaterThanEqual(name, productType, minPrice, pageable);
     }
     public void save(Product product) {
         productRepository.save(product);
