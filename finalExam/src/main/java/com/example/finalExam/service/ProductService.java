@@ -39,9 +39,7 @@ public class ProductService {
     }
     @Transactional
     public void deleteProductByList(List<Integer> ids) {
-        for (Integer id : ids) {
-            productRepository.deleteById(id);
-        }
+       productRepository.deleteAllById(ids);
     }
 
 }
