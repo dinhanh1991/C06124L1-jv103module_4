@@ -37,10 +37,12 @@
 
         <div class="form-group">
             <label for="productType">Loại sản phẩm:</label>
-            <select class="form-control" id="productType" th:field="*{productType}">
+            <select class="form-control" id="productType" th:field="*{productType}"
+                    th:classappend="${#fields.hasErrors('productType') ? 'is-invalid' : ''}">
                 <option value="">--Chọn--</option>
-                <option th:each="type : ${productTypes}" th:value="${type.id}" th:text="${type.productTypeName}"></option>
+                <option th:each="type : ${productType}" th:value="${type.id}" th:text="${type.productTypeName}"></option>
             </select>
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('productType')}" th:errors="*{productType}"></div>
         </div>
 
         <button type="submit" class="btn btn-primary">Thêm sản phẩm</button>

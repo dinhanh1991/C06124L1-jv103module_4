@@ -6,14 +6,15 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" th:href="@{/static/css/style.css}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 </head>
 <body>
 
 <div class="container">
     <h1>Quản Lý Sản Phẩm</h1>
 
-    <button th:onclick="|window.location.href='@{/products/create}'|">Thêm sản phẩm</button>
+    <button onclick="window.location.href='/products/create'">Thêm sản phẩm</button>
 
     <div class="card shadow p-3 mb-4 bg-white rounded">
         <div class="card-body">
@@ -23,24 +24,24 @@
                     <div class="form-group col-md-4">
                         <label for="name">Tên sản phẩm:</label>
                         <input type="text" class="form-control" id="name" name="name"
-                               placeholder="Nhập tên sản phẩm">
+                               placeholder="Nhập tên sản phẩm" th:value="${param.name}">
                     </div>
                     <div class="form-group col-md-4">
                         <label for="minPrice">Giá bắt đầu:</label>
                         <input type="number" class="form-control" id="minPrice" name="minPrice"
-                               placeholder="Nhập giá bắt đầu">
+                               placeholder="Nhập giá bắt đầu" th:value="${param.minPrice}">
                     </div>
                     <div class="form-group col-md-4">
                         <label for="productTypeId">Loại sản phẩm:</label>
                         <select id="productTypeId" name="productTypeId" class="form-control">
                             <option value="">--Chọn--</option>
-                            <option th:each="type : ${productTypes}"
+                            <option th:each="type : ${productType}"
                                     th:value="${type.id}"
                                     th:text="${type.productTypeName}"></option>
                         </select>
                     </div>
                 </div>
-                <button type="button" class="btn btn-secondary" onclick="clearSearchForm()"><i
+                <button type="button" class="btn btn-secondary" onclick="window.location.href='/products'"><i
                         class="fas fa-sync-alt"></i> Xóa tìm kiếm
                 </button>
                 <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Tìm kiếm</button>
@@ -67,7 +68,7 @@
                 <td><input type="checkbox" name="selectedProductIds" th:value="${product.id}"></td>
                 <td th:text="${product.name}"></td>
                 <td th:text="${product.price}"></td>
-                <td th:text="${product.productType.productTypeName}"></td>
+                <td th:text="${product.productType.getProductTypeName()}"></td>
                 <td th:text="${product.status}"></td>
                 <td>
                     <a th:href="@{/products/edit/{id}(id=${product.id})}" class="btn btn-sm btn-info"><i
@@ -78,7 +79,7 @@
         </table>
     </div>
 
-    <form id="deleteForm" th:action="@{products/deleteProductByList}" method="post">
+    <form id="deleteForm" th:action="@{/products/deleteProductByList}" method="post">
         <input type="hidden" name="selectedProductIds" id="selectedProductIds">
         <button type="button" class="btn btn-danger" onclick="confirmDelete()">
             <i class="fas fa-trash"></i> Xóa
@@ -88,34 +89,36 @@
     <nav aria-label="Page navigation example">
         <ul class="pagination justify-content-center">
             <li class="page-item" th:classappend="${productPage.number == 0 ? 'disabled' : ''}">
-                <a class="page-link" th:href="@{/products(page=${productPage.number - 1})}" aria-label="Previous">
+                <a class="page-link"
+                   th:href="@{/products/search(name=${param.name}, productTypeId=${param.productTypeId}, minPrice=${param.minPrice}, page=${productPage.number - 1})}"
+                   aria-label="Previous">
                     <span aria-hidden="true">«</span>
                 </a>
             </li>
             <li class="page-item" th:each="i : ${#numbers.sequence(0, productPage.totalPages - 1)}"
                 th:classappend="${i == productPage.number ? 'active' : ''}">
-                <a class="page-link" th:href="@{/products(page=${i})}" th:text="${i + 1}"></a>
+                <a class="page-link"
+                   th:href="@{/products/search(name=${param.name}, productTypeId=${param.productTypeId}, minPrice=${param.minPrice}, page=${i})}"
+                   th:text="${i + 1}">
+                </a>
             </li>
             <li class="page-item" th:classappend="${productPage.number >= productPage.totalPages - 1 ? 'disabled' : ''}">
-                <a class="page-link" th:href="@{/products(page=${productPage.number + 1})}" aria-label="Next">
+                <a class="page-link"
+                   th:href="@{/products/search(name=${param.name}, productTypeId=${param.productTypeId}, minPrice=${param.minPrice}, page=${productPage.number + 1})}"
+                   aria-label="Next">
                     <span aria-hidden="true">»</span>
                 </a>
             </li>
         </ul>
     </nav>
+
 </div>
 <script th:inline="javascript">
-    function clearSearchForm() {
-        document.getElementById("name").value = "";
-        document.getElementById("minPrice").value = "";
-        document.getElementById("productTypeId").value = "";
-    }
     function confirmDelete() {
         let selectedIds = [];
         document.querySelectorAll('input[name="selectedProductIds"]:checked').forEach((checkbox) => {
             selectedIds.push(checkbox.value);
         });
-
         if (selectedIds.length === 0) {
             alert("Vui lòng chọn ít nhất một sản phẩm để xóa!");
             return;
@@ -126,6 +129,22 @@
             document.getElementById("deleteForm").submit();
         }
     }
+</script>
+<script th:if="${message}">
+    Swal.fire({
+        icon: 'success',
+        title: 'Thành công!',
+        text: '[[${message}]]',
+        confirmButtonText: 'OK'
+    });
+</script>
+<script th:if="${error}">
+    Swal.fire({
+        icon: 'error',
+        title: 'Lỗi!',
+        text: '[[${error}]]',
+        confirmButtonText: 'OK'
+    });
 </script>
 </body>
 </html>

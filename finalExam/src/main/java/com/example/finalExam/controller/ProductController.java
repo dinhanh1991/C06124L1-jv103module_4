@@ -31,10 +31,9 @@ public class ProductController {
     @Autowired
     private IProductTypeRepo productTypeRepo;
     @GetMapping()
-    public ModelAndView listProducts(Model model,
-                                     @RequestParam(name = "page",defaultValue = "0",required = false) int page) {
+    public ModelAndView listProducts(@RequestParam(name = "page",defaultValue = "0",required = false) int page) {
         ModelAndView mav = new ModelAndView("home");
-        Pageable pageable =  PageRequest.of(page, 3);
+        Pageable pageable =  PageRequest.of(page, 5);
         mav.addObject("currentPage", page);
         mav.addObject("productPage", productService.findAll(pageable));
         mav.addObject("productType", productTypeRepo.findAll());
@@ -46,11 +45,11 @@ public class ProductController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Integer productTypeId,
             @RequestParam(required = false) Integer minPrice,
-            Model model,@RequestParam(name = "page",defaultValue = "0",required = false) int page) {
+            @RequestParam(name = "page",defaultValue = "0",required = false) int page) {
         ModelAndView mav = new ModelAndView("home");
-        Pageable pageable =  PageRequest.of(page, 3);
+        Pageable pageable =  PageRequest.of(page, 5);
         Page<Product> productPage;
-        mav.addObject("productTypes",productTypeRepo.findAll());
+        mav.addObject("productType",productTypeRepo.findAll());
         ProductType productType = null;
         if (productTypeId != null) {
           productType=productTypeRepo.findById(productTypeId).orElse(null) ;}
@@ -74,23 +73,29 @@ public class ProductController {
         mav.addObject("currentPage", page);
         mav.addObject("productPage", productPage);
         mav.addObject("totalPage", productPage.getTotalPages());
+        mav.addObject("name", name);
+        mav.addObject("productTypeId", productTypeId);
+        mav.addObject("minPrice", minPrice);
         return mav;
 }
     @GetMapping("/create")
     public String showCreateForm(Model model) {
-        model.addAttribute("productTypes",productTypeRepo.findAll());
+        model.addAttribute("productType",productTypeRepo.findAll());
         model.addAttribute("productDTO", new ProductDTO());
         return "productCreateForm";
     }
     @PostMapping("/create")
     public String createProduct(@Valid @ModelAttribute("productDTO") ProductDTO productDTO,
-                                BindingResult bindingResult, Model model) {
+                                BindingResult bindingResult,Model model,RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
+           model.addAttribute("productType",productTypeRepo.findAll());
             return "productCreateForm";
         }
         Product product = new Product();
         BeanUtils.copyProperties(productDTO, product);
         productService.save(product);
+        redirectAttributes.addFlashAttribute("productType",productTypeRepo.findAll());
+        redirectAttributes.addFlashAttribute("message", "Thêm sản phẩm thành công!");
         return "redirect:/products";
     }
     @GetMapping("/edit/{id}")
@@ -103,7 +108,7 @@ public class ProductController {
 
             ProductDTO productDTO = new ProductDTO();
             BeanUtils.copyProperties(product, productDTO);
-
+            model.addAttribute("productTypes",productTypeRepo.findAll());
             model.addAttribute("productDTO", productDTO);
             return "productEditForm";
         } else {
@@ -112,15 +117,18 @@ public class ProductController {
     }
     @PostMapping("/edit")
     public String updateProduct(@Valid @ModelAttribute("productDTO") ProductDTO productDTO,
-                                BindingResult bindingResult, Model model) {
+                                BindingResult bindingResult, Model model,RedirectAttributes redirectAttributes) {
         model.addAttribute("productType",productTypeRepo.findAll());
         if (bindingResult.hasErrors()) {
+           model.addAttribute("productType",productTypeRepo.findAll());
             return "productEditForm";
         }
 
         Product product = new Product();
         BeanUtils.copyProperties(productDTO, product);
         productService.save(product);
+        redirectAttributes.addFlashAttribute("productType",productTypeRepo.findAll());
+        redirectAttributes.addFlashAttribute("message", "Thêm sản phẩm thành công!");
         return "redirect:/products";
     }
     @PostMapping("/deleteProductByList")

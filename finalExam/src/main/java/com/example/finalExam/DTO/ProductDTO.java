@@ -20,6 +20,7 @@ public class ProductDTO {
     private Integer price;
     @NotNull(message = "Tình trạng không được để trống")
     private Product.ProductStatus status;
+    @NotNull(message = "Điền chủng loại vào")
     private ProductType productType;
     public ProductDTO() {}
     public ProductDTO(Integer id, String name, Integer price, Product.ProductStatus status, ProductType productType) {
